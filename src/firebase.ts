@@ -1,24 +1,16 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, onAuthStateChanged } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { 
-  getFirestore, 
-  enableIndexedDbPersistence, 
-  connectFirestoreEmulator,
-  enableMultiTabIndexedDbPersistence,
+  enableIndexedDbPersistence,
   CACHE_SIZE_UNLIMITED,
   initializeFirestore,
   persistentLocalCache,
   persistentSingleTabManager
 } from 'firebase/firestore';
 import { 
-  getDatabase, 
-  connectDatabaseEmulator, 
-  ref, 
-  set, 
-  onValue, 
-  onDisconnect,
-  goOnline,
-  goOffline 
+  getDatabase,
+  ref,
+  onValue
 } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 
@@ -66,12 +58,21 @@ try {
   // Initialize Auth
   auth = getAuth(app);
   
-  // Initialize Firestore with persistence
-  db = getFirestore(app);
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
+  // Initialize Firestore with enhanced persistence configuration
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+      tabManager: persistentSingleTabManager({ forceOwnership: true })
+    })
+  });
+
+  // Enable offline persistence with proper error handling
+  enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
       // Multiple tabs open, persistence can only be enabled in one tab at a time.
       console.warn('Multiple tabs open, persistence disabled');
+      // Try to enable persistence in single-tab mode
+      return enableIndexedDbPersistence(db);
     } else if (err.code === 'unimplemented') {
       // The current browser doesn't support persistence
       console.warn('Browser does not support persistence');

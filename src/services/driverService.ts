@@ -1,6 +1,7 @@
 import { db, storage } from '../firebase';
-import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getDocumentWithRetry } from '../services/offlineService';
 
 interface DriverRegistrationData {
   fullName: string;
@@ -93,10 +94,21 @@ export const toggleDriverAvailability = async (driverId: string, isAvailable: bo
 
 export const getDriverProfile = async (driverId: string) => {
   try {
-    const driverDoc = await getDoc(doc(db, 'drivers', driverId));
+    const driverDoc = await getDocumentWithRetry<any>(doc(db, 'drivers', driverId), {
+      maxRetries: 3,
+      retryDelay: 1000,
+      allowCached: true
+    });
+    
     if (!driverDoc.exists()) {
       throw new Error('Driver not found');
     }
+
+    // Check if we're using cached data
+    if (driverDoc.metadata.fromCache) {
+      console.warn('Using cached driver data');
+    }
+
     return { id: driverDoc.id, ...driverDoc.data() };
   } catch (error: any) {
     throw new Error(error.message || 'Failed to fetch driver profile');
