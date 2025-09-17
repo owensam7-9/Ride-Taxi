@@ -5,6 +5,9 @@
 [build.environment]
   NODE_VERSION = "16"
   NPM_FLAGS = "--legacy-peer-deps"
+  SECRETS_SCAN_ENABLED = "true"
+  # Exclude certain paths from secrets scanning
+  SECRETS_SCAN_OMIT_PATHS = "package.json,package-lock.json"
 
 [[redirects]]
   from = "/*"

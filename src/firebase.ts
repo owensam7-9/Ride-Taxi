@@ -6,12 +6,12 @@ import { getDatabase } from 'firebase/database';
 // Check for required environment variables
 const requiredEnvVars = {
   REACT_APP_GOOGLE_API_KEY: process.env.REACT_APP_GOOGLE_API_KEY,
-  REACT_APP_AUTH_DOMAIN: process.env.REACT_APP_AUTH_DOMAIN || "ride-cosy.firebaseapp.com",
-  REACT_APP_PROJECT_ID: process.env.REACT_APP_PROJECT_ID || "ride-cosy",
-  REACT_APP_STORAGE_BUCKET: process.env.REACT_APP_STORAGE_BUCKET || "ride-cosy.firebasestorage.app",
-  REACT_APP_MESSAGING_SENDER_ID: process.env.REACT_APP_MESSAGING_SENDER_ID || "630922593814",
-  REACT_APP_APP_ID: process.env.REACT_APP_APP_ID || "1:630922593814:web:75f9c6a27b573b77069737",
-  REACT_APP_DATABASE_URL: process.env.REACT_APP_DATABASE_URL || "https://ride-cosy-default-rtdb.firebaseio.com"
+  REACT_APP_AUTH_DOMAIN: process.env.REACT_APP_AUTH_DOMAIN,
+  REACT_APP_PROJECT_ID: process.env.REACT_APP_PROJECT_ID,
+  REACT_APP_STORAGE_BUCKET: process.env.REACT_APP_STORAGE_BUCKET,
+  REACT_APP_MESSAGING_SENDER_ID: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  REACT_APP_APP_ID: process.env.REACT_APP_APP_ID,
+  REACT_APP_DATABASE_URL: process.env.REACT_APP_DATABASE_URL
 };
 
 const missingVars = Object.entries(requiredEnvVars)
