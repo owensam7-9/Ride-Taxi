@@ -1,74 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
+import NavMenu from "./NavMenu";
 
-interface Props {
-  setShowRide: (value: boolean) => void;
-  setShowDrive: (value: boolean) => void;
-  setShowMore: (value: boolean) => void;
-  setShowAccount: (value: boolean) => void;
-}
-
-
-const MenuBar: React.FC<Props> = ({setShowRide,  setShowDrive, setShowMore,  setShowAccount}) => {
-   const userName = localStorage.getItem('userName')
-   const accountName = userName?.split(' ')[0]
+const MenuBar: React.FC = () => {
+  const [showMenu, setShowMenu] = useState(false);
+  const userName = localStorage.getItem('userName');
+  const accountName = userName?.split(' ')[0];
   
-   return(
-     <nav className="nav_bar bg-black text-white p-0 px-5 md:px-10 lg:px-12 xl:px-[85px] 2xl:px-[130px]">
-     <div className="nav_bar_container flex items-center justify-between px-2 md:px-10 lg:px-12">
-      <ul className="nav_left flex items-center ">
-        <li className="nav_bar_logo mr-14  cursor-pointer">
-          <a href="/">
-            <div className='font-sans text-2xl font-normal'>Ride Cosy</div>
+  return(
+     <nav className="bg-black text-white p-4 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <a href="/" className="flex-shrink-0">
+            <div className="font-sans text-2xl font-normal">Ride Cosy</div>
           </a>
-        </li>
-        <li className="left_nav_bar_item text-lg ">
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:block">
+            <NavMenu />
+          </div>
+
+          {/* Mobile menu button */}
           <button
-            onMouseEnter={() => {setShowRide(true)
-            setShowDrive(false)
-            setShowMore(false)
-            setShowAccount(false)
-            }
-          }
-           className="ride font-san font-medium py-3">Ride</button>
-        </li>
-        <li className="  left_nav_bar_item ml-6 text-lg py-3">
-          <button 
-          onMouseEnter={() => {setShowDrive(true)
-          setShowRide(false)
-          setShowMore(false)
-          setShowAccount(false)
-          }}
-          className="drive font-medium">Drive</button>
-        </li>
-        <li className="left_nav_bar_item ml-6 text-lg">
-          <button 
-          onMouseEnter={() => {setShowMore(true)
-          setShowRide(false)
-          setShowDrive(false)
-          setShowAccount(false)
-          }}
-          className="more font-medium py-3">More</button>
-        </li>
-      </ul>
-      <ul className="nav_right flex items-center">
-        <li className="help text-lg font-medium">
-          <a href="https://help.ridecosy.co.ke/riders">
-            <div>Help</div>
-          </a> 
-        </li>
-        <li className="Acc_name ml-6 text-lg">
-          <button 
-          onMouseEnter={() => {setShowAccount(true)
-          setShowRide(false)
-          setShowDrive(false)
-          setShowMore(false)
-          }}
-          className='font-medium py-3'>{accountName? accountName: null}</button>
-        </li>
-      </ul>  
-    </div>
-  </nav>
-  )
+            onClick={() => setShowMenu(!showMenu)}
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-300 focus:outline-none"
+          >
+            <span className="sr-only">Open main menu</span>
+            <svg
+              className="h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={showMenu ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              />
+            </svg>
+          </button>
+
+          {/* User Account and Help */}
+          <div className="hidden md:flex items-center space-x-6">
+            <a 
+              href="https://help.ridecosy.co.ke/riders" 
+              className="text-white hover:text-gray-300 text-sm font-medium"
+            >
+              Help
+            </a>
+            <button
+              className="text-white hover:text-gray-300 px-4 py-2 text-sm font-medium rounded-md"
+            >
+              {accountName || 'Sign In'}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {showMenu && (
+          <div className="md:hidden">
+            <NavMenu isMobile={true} onClose={() => setShowMenu(false)} />
+            <div className="pt-4 border-t border-gray-700">
+              <a 
+                href="https://help.ridecosy.co.ke/riders" 
+                className="block py-2 text-base font-medium text-white hover:text-gray-300"
+              >
+                Help
+              </a>
+              <button
+                className="block w-full text-left py-2 text-base font-medium text-white hover:text-gray-300"
+              >
+                {accountName || 'Sign In'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
 }
 
 

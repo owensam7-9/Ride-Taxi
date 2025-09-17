@@ -8,22 +8,7 @@ const Auth = () => {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [input, setInput] = useState('');
   const [userType, setUserType] = useState<'rider' | 'driver'>('rider');
-
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(event.target.value);
-  };
-  //const [isAuthorised, setIsAuthorised] = useState(false)
-
-
-  // useEffect(() => {
-  //    const userName = localStorage.getItem('userName');
-  //     if (userName) {
-  //       window.location.href = "/";
-  //     }
-  //   },[isAuthorised]);
 
   const signInWithGoogle = async () => {
     setIsLoading(true);
@@ -79,7 +64,18 @@ const Auth = () => {
         localStorage.setItem('userEmail', user.email || '');
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userType', userType);
-        window.location.href = '/';
+        localStorage.setItem('photoURL', user.photoURL || '');
+
+        if (userType === 'driver') {
+          const driverDoc = await getDoc(doc(db, 'drivers', user.uid));
+          if (driverDoc.exists()) {
+            window.location.href = '/driver/dashboard';
+          } else {
+            window.location.href = '/driver/register';
+          }
+        } else {
+          window.location.href = '/';
+        }
       }
     } catch (error: any) {
       console.error('Facebook Sign-in Error:', error);
@@ -90,116 +86,101 @@ const Auth = () => {
     }
   }
  
-    return (
-        <div>
-          <header className="bg-black py-6 px-6 md:px-8 cursor-pointer">
-            <LogoSVG/>
-          </header>
-          <section className="my-[2em] sm:my-[7em] mx-auto w-[90%] sm:w-[380px] font-[arial] placeholder-text-reed-400">
-            {isError && (
-              <div className="error_message mx-auto bg-red-100 py-3 text-center text-red-600 rounded-lg mb-3">
-                {errorMessage || 'Something went wrong. Please try again!'}
-              </div>
-            )}
-            {isLoading && (
-              <div className="loading_message mx-auto bg-blue-100 py-3 text-center text-blue-600 rounded-lg mb-3">
-                Please wait while we sign you in...
-              </div>
-            )}
-            
-            <div className="mb-6">
-              <h2 className="text-2xl mb-4">I want to...</h2>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setUserType('rider')}
-                  className={`flex-1 py-3 px-4 rounded-lg transition-colors ${
-                    userType === 'rider'
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                  }`}
-                >
-                  Book a Ride
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUserType('driver')}
-                  className={`flex-1 py-3 px-4 rounded-lg transition-colors ${
-                    userType === 'driver'
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                  }`}
-                >
-                  Drive
-                </button>
-              </div>
-            </div>
-
-            <form className='login'>
-                <h2 className='text-2xl mb-3'>What's your phone number or email?</h2>
-                <input className='focus:border bg-gray-200 w-full px-3 py-3 rounded-lg placeholder-gray-500'
-                placeholder='Enter phone number or email'
-                autoFocus
-                inputMode='email'
-                autoComplete='email'
-                value={input}
-                onChange={handleChange}
-                />
-                {!isPhoneNumberOrEmail(input) && input.length > 0 && <p className='text-red-600 text-sm font-medium my-1'>Please enter a phone number or email </p>
-                }
-                
-
-                <button className='bg-black text-white w-full px-3 py-3 rounded-lg my-3 font-semibold'>Continue</button>
-            </form>
-
-            <span className="flex items-center my-2">
-              <hr className="flex-grow border-t-1 border-gray-400 mr-2"/>
-              <span className="text-gray-500">or</span>
-              <hr className="flex-grow border-t-1 border-gray-400 ml-2"/>
-            </span>
-            
-            <div className='social_media_auth'>
-            <div 
-              onClick={signInWithGoogle}
-              className="google flex cursor-pointer justify-center   px-3 py-3  my-3 hover:bg-gray-200 font-[Arial] bg-gray-100 rounded-lg">
-              <GoogleSVG/>
-              <button
-              className="text-center text-md font-semibold ml-3"
-              >Continue with Google</button>
-            </div>
-            <div
-            onClick={signInWithFacebook}
-             className="facebook cursor-pointer flex justify-center px-3 py-3 my-3 hover:bg-gray-200 font-[Arial] bg-gray-100 rounded-lg">
-              <FacebookSVG/>
-              <button className="text-center ml-3 text-md font-semibold" >Continue with Facebook
-              </button>
-            </div>
-            </div>
-            < div className='info text-[#6B6B6B] text-[12px] mt-5'>
-              <p>By proceeding, you consent to get calls, WhatsApp or SMS messages, including by automated means, from Ride Cosy and its affiliates to the number provided.
-              </p>
-              <p>
-              This site is protected by reCAPTCHA and the Google <a className='underline text-black' href="https://policies.google.com/privacy">Privacy Policy</a>  and <a className='underline text-black' href="https://policies.google.com/terms">Terms of Service</a> apply.</p>
-            </div>
-            
-          </section>
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-black py-6 px-6 md:px-8">
+        <a href="/" className="inline-block">
+          <div className="text-white text-2xl font-bold">Ride Cosy</div>
+        </a>
+      </header>
+      
+      <div className="max-w-md mx-auto my-8 px-4 py-8 bg-white rounded-lg shadow-lg">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Ride Cosy</h2>
+          <p className="text-gray-600">Choose how you want to use the platform</p>
         </div>
-    );
-}
 
+        <div className="mb-8">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setUserType('rider')}
+              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                userType === 'rider'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-xl mb-2">🚗</div>
+              <h3 className="font-semibold mb-1">Book a Ride</h3>
+              <p className="text-sm text-gray-500">Get to your destination safely</p>
+            </button>
 
-function isPhoneNumberOrEmail(input:any) {
-  // Phone number regular expression
-  const phoneNumberRegex = /^\+?[0-9()-]{7,20}$/;
-  
-  // Email regular expression
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  // Check if input matches phone number or email format
-  if (phoneNumberRegex.test(input) || emailRegex.test(input)) {
-    return true;
-  } else {
-    return false;
-  }
-}
+            <button
+              onClick={() => setUserType('driver')}
+              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                userType === 'driver'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-xl mb-2">👨</div>
+              <h3 className="font-semibold mb-1">Drive with Us</h3>
+              <p className="text-sm text-gray-500">Earn money driving</p>
+            </button>
+          </div>
+        </div>
+
+        {isError && (
+          <div className="mb-6 p-4 bg-red-100 text-red-600 rounded-lg">
+            {errorMessage}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="mb-6 p-4 bg-blue-100 text-blue-600 rounded-lg text-center">
+            Please wait while we sign you in...
+          </div>
+        )}
+
+        <div className="flex flex-col space-y-4">
+          <button
+            onClick={signInWithGoogle}
+            disabled={isLoading}
+            className={`w-full py-4 px-6 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium 
+              flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <div className="w-6 h-6">
+              <GoogleSVG/>
+            </div>
+            <span>Continue with Google</span>
+          </button>
+
+          <button
+            onClick={signInWithFacebook}
+            disabled={isLoading}
+            className={`w-full py-4 px-6 rounded-lg border border-gray-300 bg-white text-gray-900 font-medium 
+              flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <div className="w-6 h-6 fill-current">
+              <FacebookSVG/>
+            </div>
+            <span>Continue with Facebook</span>
+          </button>
+        </div>
+
+        <div className="mt-8 text-center text-sm text-gray-500">
+          <p>By continuing, you agree to Ride Cosy</p>
+          <div className="mt-2 space-x-2">
+            <a href="/terms" className="text-blue-600 hover:text-blue-800">Terms of Service</a>
+            <span>•</span>
+            <a href="/privacy" className="text-blue-600 hover:text-blue-800">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default Auth;
