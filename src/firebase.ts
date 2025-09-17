@@ -1,27 +1,51 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getDatabase } from 'firebase/database';
 
-if (!process.env.REACT_APP_GOOGLE_API_KEY) {
-  console.error('Firebase API key is missing in environment variables');
+// Check for required environment variables
+const requiredEnvVars = {
+  REACT_APP_GOOGLE_API_KEY: process.env.REACT_APP_GOOGLE_API_KEY,
+  REACT_APP_AUTH_DOMAIN: process.env.REACT_APP_AUTH_DOMAIN || "ride-cosy.firebaseapp.com",
+  REACT_APP_PROJECT_ID: process.env.REACT_APP_PROJECT_ID || "ride-cosy",
+  REACT_APP_STORAGE_BUCKET: process.env.REACT_APP_STORAGE_BUCKET || "ride-cosy.firebasestorage.app",
+  REACT_APP_MESSAGING_SENDER_ID: process.env.REACT_APP_MESSAGING_SENDER_ID || "630922593814",
+  REACT_APP_APP_ID: process.env.REACT_APP_APP_ID || "1:630922593814:web:75f9c6a27b573b77069737",
+  REACT_APP_DATABASE_URL: process.env.REACT_APP_DATABASE_URL || "https://ride-cosy-default-rtdb.firebaseio.com"
+};
+
+const missingVars = Object.entries(requiredEnvVars)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+if (missingVars.length > 0) {
+  console.error('Missing required environment variables:', missingVars.join(', '));
+  throw new Error('Missing required environment variables. Check .env file.');
 }
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-  authDomain: "ride-cosy.firebaseapp.com",
-  projectId: "ride-cosy",
-  storageBucket: "ride-cosy.firebasestorage.app",
-  messagingSenderId: "630922593814",
-  appId: "1:630922593814:web:75f9c6a27b573b77069737"
+  apiKey: requiredEnvVars.REACT_APP_GOOGLE_API_KEY,
+  authDomain: requiredEnvVars.REACT_APP_AUTH_DOMAIN,
+  projectId: requiredEnvVars.REACT_APP_PROJECT_ID,
+  storageBucket: requiredEnvVars.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: requiredEnvVars.REACT_APP_MESSAGING_SENDER_ID,
+  appId: requiredEnvVars.REACT_APP_APP_ID,
+  databaseURL: requiredEnvVars.REACT_APP_DATABASE_URL
 };
 
-// Initialize Firebase
+// Initialize Firebase services with better error handling
 let app;
 let auth;
+let db;
+let rtdb;
+
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  db = getFirestore(app);
+  rtdb = getDatabase(app);
 } catch (error) {
   console.error('Error initializing Firebase:', error);
 }
 
-export { app, auth };
+export { app, auth, db, rtdb };

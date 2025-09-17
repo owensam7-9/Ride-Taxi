@@ -41,7 +41,7 @@ const Drop:React.FC = () => {
         id: 2,
         carLink: "https://d1a3f4spazzrp4.cloudfront.net/car-types/haloProductImages/v1.1/Black_v1.png",
         name: "RideCosy",
-        extraDetails: "Affordable, everyday ride",
+        extraDetails: "Affordable, everyday ride cosy",
         duration: travelInfo ? travelInfo.duration.text : null,
         time: time? time : "loading..",
         multiplier: 1,
