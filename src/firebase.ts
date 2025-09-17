@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from 'firebase/firestore';
-import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { getDatabase, connectDatabaseEmulator, ref, set, onValue, onDisconnect } from 'firebase/database';
 import { enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 
 // Check for required environment variables
@@ -40,6 +40,7 @@ let auth;
 let db;
 let rtdb;
 
+
 try {
   // Initialize Firebase
   app = initializeApp(firebaseConfig);
@@ -59,17 +60,10 @@ try {
     }
   });
   
-  // Initialize Realtime Database with persistence
+  // Initialize Realtime Database
   rtdb = getDatabase(app);
-  rtdb.goOnline(); // Ensure database connection is active
   
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-  throw error; // Re-throw to handle it in the UI
-}
-
-// Add connection state listeners
-if (rtdb) {
+  // Setup database connection monitoring
   const connectedRef = ref(rtdb, '.info/connected');
   onValue(connectedRef, (snap) => {
     if (snap.val() === true) {
@@ -78,6 +72,10 @@ if (rtdb) {
       console.warn('Not connected to Firebase Realtime Database');
     }
   });
+  
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  throw error; // Re-throw to handle it in the UI
 }
 
 export { app, auth, db, rtdb };
