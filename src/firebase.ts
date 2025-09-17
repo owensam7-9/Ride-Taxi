@@ -1,8 +1,26 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from 'firebase/firestore';
-import { getDatabase, connectDatabaseEmulator, ref, set, onValue, onDisconnect } from 'firebase/database';
-import { enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator, onAuthStateChanged } from 'firebase/auth';
+import { 
+  getFirestore, 
+  enableIndexedDbPersistence, 
+  connectFirestoreEmulator,
+  enableMultiTabIndexedDbPersistence,
+  CACHE_SIZE_UNLIMITED,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager
+} from 'firebase/firestore';
+import { 
+  getDatabase, 
+  connectDatabaseEmulator, 
+  ref, 
+  set, 
+  onValue, 
+  onDisconnect,
+  goOnline,
+  goOffline 
+} from 'firebase/database';
+import { getStorage } from 'firebase/storage';
 
 // Check for required environment variables
 const requiredEnvVars = {
@@ -39,7 +57,7 @@ let app;
 let auth;
 let db;
 let rtdb;
-
+let storage;
 
 try {
   // Initialize Firebase
@@ -63,6 +81,9 @@ try {
   // Initialize Realtime Database
   rtdb = getDatabase(app);
   
+  // Initialize Storage
+  storage = getStorage(app);
+  
   // Setup database connection monitoring
   const connectedRef = ref(rtdb, '.info/connected');
   onValue(connectedRef, (snap) => {
@@ -78,4 +99,4 @@ try {
   throw error; // Re-throw to handle it in the UI
 }
 
-export { app, auth, db, rtdb };
+export { app, auth, db, rtdb, storage };

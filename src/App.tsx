@@ -7,39 +7,21 @@ import Pick from './Pages/pick';
 import Drop from './Pages/drop';
 import NoPage from './Pages/Nopage';
 import Auth from './Pages/auth';
+import DriverRegistration from './Pages/driver/register';
+import DriverDashboard from './Pages/driver/dashboard';
 
 const App:React.FC = () => {
     // Set document title
     React.useEffect(() => {
         document.title = 'Ride Cosy';
     }, []);
-    // const [showInsatlledMessage, setShowInsatlledMessage] = useState<boolean>(false);
-
-   // Detects if device is on iOS 
-
-    // const isIos = () => {
-    //   const userAgent = window.navigator.userAgent.toLowerCase();
-    //   return /iphone|ipad|ipod/.test( userAgent );
-    // }
-
-    // Detects if device is in standalone mode
-    // const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
-   
-    // Checks if should display install popup notification:
-
-    // if (isIos() && !isInStandaloneMode()) {
-    //   setShowInsatlledMessage(true);
-    // }
-
-
-
-
-    
 
     const userName = localStorage.getItem('userName');
     if(!userName){
       return <Auth/>
     }
+
+    const userType = localStorage.getItem('userType');
 
   return (
     <div>
@@ -47,14 +29,14 @@ const App:React.FC = () => {
           <Switch>
             <Route exact path = "/" component={Home}/>
             <Route exact path = "/pick/:origin" component={Pick}/>
-            <ErrorBoundary
-              FallbackComponent={ErrorFallback}
-            >
-            <Route exact path = "/drop/:origin/:end" component = {Drop}/>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <Route exact path = "/drop/:origin/:end" component = {Drop}/>
             </ErrorBoundary>
+            <Route exact path = "/driver/register" component={DriverRegistration}/>
+            <Route exact path = "/driver/dashboard" component={DriverDashboard}/>
             <Route exact path = "*" component = {NoPage}/>
           </Switch>
-    </Router>
+      </Router>
     </div>
   );
 }
