@@ -2,6 +2,7 @@
   "name": "ride-cosy",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "description": "Ride Cosy - Your comfortable ride companion",
   "dependencies": {
     "@craco/craco": "^6.4.3",
