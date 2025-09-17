@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from 'firebase/firestore';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 
 // Check for required environment variables
 const requiredEnvVars = {
@@ -40,12 +41,43 @@ let db;
 let rtdb;
 
 try {
+  // Initialize Firebase
   app = initializeApp(firebaseConfig);
+  
+  // Initialize Auth
   auth = getAuth(app);
+  
+  // Initialize Firestore with persistence
   db = getFirestore(app);
+  enableMultiTabIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one tab at a time.
+      console.warn('Multiple tabs open, persistence disabled');
+    } else if (err.code === 'unimplemented') {
+      // The current browser doesn't support persistence
+      console.warn('Browser does not support persistence');
+    }
+  });
+  
+  // Initialize Realtime Database with persistence
   rtdb = getDatabase(app);
+  rtdb.goOnline(); // Ensure database connection is active
+  
 } catch (error) {
   console.error('Error initializing Firebase:', error);
+  throw error; // Re-throw to handle it in the UI
+}
+
+// Add connection state listeners
+if (rtdb) {
+  const connectedRef = ref(rtdb, '.info/connected');
+  onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+      console.log('Connected to Firebase Realtime Database');
+    } else {
+      console.warn('Not connected to Firebase Realtime Database');
+    }
+  });
 }
 
 export { app, auth, db, rtdb };

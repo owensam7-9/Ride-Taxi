@@ -1,4 +1,4 @@
-import { auth, db } from '../firebase';
+import { auth, db, rtdb } from '../firebase';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
@@ -6,6 +6,7 @@ import {
   User 
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, set, onValue, onDisconnect } from 'firebase/database';
 
 export const handleGoogleSignIn = async (userType: 'rider' | 'driver' = 'rider') => {
   try {
@@ -56,28 +57,60 @@ export const handleFacebookSignIn = async (userType: 'rider' | 'driver' = 'rider
 const createOrUpdateUserProfile = async (user: User, userType: 'rider' | 'driver') => {
   if (!user.uid) return;
 
-  const userRef = doc(db, userType === 'driver' ? 'drivers' : 'users', user.uid);
-  const userSnap = await getDoc(userRef);
+  try {
+    const userRef = doc(db, userType === 'driver' ? 'drivers' : 'users', user.uid);
+    const userSnap = await getDoc(userRef);
 
-  if (!userSnap.exists()) {
-    // Create new user profile
-    await setDoc(userRef, {
+    const userData = {
       uid: user.uid,
       displayName: user.displayName,
       email: user.email,
       phoneNumber: user.phoneNumber,
       photoURL: user.photoURL,
       type: userType,
-      createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
       status: userType === 'driver' ? 'inactive' : 'active'
-    });
-  } else {
-    // Update existing user's last login
-    await setDoc(userRef, {
-      lastLogin: serverTimestamp(),
-      ...(user.phoneNumber && { phoneNumber: user.phoneNumber }),
-      ...(user.photoURL && { photoURL: user.photoURL })
-    }, { merge: true });
+    };
+
+    if (!userSnap.exists()) {
+      // Create new user profile
+      await setDoc(userRef, {
+        ...userData,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+
+      // Also create a realtime database reference for online status
+      const rtdbUserRef = ref(rtdb, `users/${user.uid}/status`);
+      await set(rtdbUserRef, 'online');
+      
+      // Set up presence system
+      const connectedRef = ref(rtdb, '.info/connected');
+      onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+          onDisconnect(rtdbUserRef).set('offline');
+          set(rtdbUserRef, 'online');
+        }
+      });
+
+    } else {
+      // Update existing user's data
+      await setDoc(userRef, userData, { merge: true });
+    }
+
+    // Cache user data locally for offline access
+    localStorage.setItem(`userData_${user.uid}`, JSON.stringify({
+      ...userData,
+      lastUpdated: new Date().toISOString()
+    }));
+
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    // Try to use cached data if available
+    const cachedData = localStorage.getItem(`userData_${user.uid}`);
+    if (cachedData) {
+      console.log('Using cached user data');
+      return JSON.parse(cachedData);
+    }
+    throw error;
   }
 };
