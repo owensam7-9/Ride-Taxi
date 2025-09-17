@@ -1,19 +1,56 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read/write their own data
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUserDoc(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isDriver() {
+      return exists(/databases/$(database)/documents/drivers/$(request.auth.uid));
+    }
+
+    // Users Collection
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isUserDoc(userId);
+      allow update: if isAuthenticated() && isUserDoc(userId);
+      allow delete: if isAuthenticated() && isUserDoc(userId);
     }
-    
-    // Allow authenticated users to read/write their driver data
+
+    // Drivers Collection
     match /drivers/{driverId} {
-      allow read, write: if request.auth != null && request.auth.uid == driverId;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isUserDoc(driverId);
+      allow update: if isAuthenticated() && isUserDoc(driverId);
+      allow delete: if false; // Only admin can delete drivers
     }
-    
-    // Allow authenticated users to read all driver locations
-    match /drivers/{driverId} {
-      allow read: if request.auth != null;
+
+    // Rides Collection
+    match /rides/{rideId} {
+      allow read: if isAuthenticated() && (
+        resource.data.riderId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.riderId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid
+      );
+      allow delete: if false; // Rides should never be deleted, only cancelled
+    }
+
+    // Driver Documents Collection
+    match /driverDocuments/{docId} {
+      allow read: if isAuthenticated() && (
+        isUserDoc(resource.data.driverId) || 
+        request.auth.token.admin == true
+      );
+      allow write: if isAuthenticated() && isUserDoc(resource.data.driverId);
     }
   }
 }

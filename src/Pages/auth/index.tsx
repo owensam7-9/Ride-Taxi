@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { handleGoogleSignIn, handleFacebookSignIn } from '../../services/authService';
 import { FacebookSVG, LogoSVG, GoogleSVG } from "../../Component/const/svg";
+import { db } from '../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Auth = () => {
   const [isError, setIsError] = useState(false);
@@ -30,17 +32,36 @@ const Auth = () => {
     
     try {
       const user = await handleGoogleSignIn(userType);
-      if (user.displayName) {
-        localStorage.setItem('userName', user.displayName);
+      if (user) {
+        // Store user data
+        localStorage.setItem('userName', user.displayName || '');
         localStorage.setItem('userEmail', user.email || '');
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userType', userType);
-        window.location.href = '/';
+        localStorage.setItem('photoURL', user.photoURL || '');
+        
+        // Redirect based on user type
+        if (userType === 'driver') {
+          // Check if driver is already registered
+          const driverDoc = await getDoc(doc(db, 'drivers', user.uid));
+          if (driverDoc.exists()) {
+            window.location.href = '/driver/dashboard';
+          } else {
+            window.location.href = '/driver/register';
+          }
+        } else {
+          // Riders go straight to home
+          window.location.href = '/';
+        }
       }
     } catch (error: any) {
       console.error('Google Sign-in Error:', error);
       setIsError(true);
-      setErrorMessage(error.message || 'Failed to sign in with Google. Please try again.');
+      if (error.code === 'permission-denied') {
+        setErrorMessage('Access denied. Please check your account type and try again.');
+      } else {
+        setErrorMessage(error.message || 'Failed to sign in with Google. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

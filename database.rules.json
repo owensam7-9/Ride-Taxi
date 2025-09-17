@@ -1,0 +1,37 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    
+    "locations": {
+      "drivers": {
+        "$driverId": {
+          ".read": "auth !== null",
+          ".write": "auth !== null && auth.uid === $driverId && root.child('drivers').child(auth.uid).exists()"
+        }
+      }
+    },
+    
+    "driverStatus": {
+      "$driverId": {
+        ".read": "auth !== null",
+        ".write": "auth !== null && auth.uid === $driverId && root.child('drivers').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['status', 'lastUpdated'])",
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'online' || newData.val() === 'offline' || newData.val() === 'on_trip')"
+        },
+        "lastUpdated": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        }
+      }
+    },
+    
+    "activeRides": {
+      "$rideId": {
+        ".read": "auth !== null && (data.child('riderId').val() === auth.uid || data.child('driverId').val() === auth.uid)",
+        ".write": "auth !== null && (data.child('riderId').val() === auth.uid || data.child('driverId').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['status', 'timestamp'])"
+      }
+    }
+  }
+}
