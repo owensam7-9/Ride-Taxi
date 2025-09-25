@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { handleGoogleSignIn, handleFacebookSignIn } from '../../services/authService';
-import { FacebookSVG, LogoSVG, GoogleSVG } from "../../Component/const/svg";
+import { FacebookSVG, GoogleSVG } from "../../Component/const/svg";
 import { db } from '../../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 

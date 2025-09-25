@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { 
-  enableIndexedDbPersistence,
   CACHE_SIZE_UNLIMITED,
   initializeFirestore,
   persistentLocalCache,
@@ -66,18 +65,10 @@ try {
     })
   });
 
-  // Enable offline persistence with proper error handling
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // Multiple tabs open, persistence can only be enabled in one tab at a time.
-      console.warn('Multiple tabs open, persistence disabled');
-      // Try to enable persistence in single-tab mode
-      return enableIndexedDbPersistence(db);
-    } else if (err.code === 'unimplemented') {
-      // The current browser doesn't support persistence
-      console.warn('Browser does not support persistence');
-    }
-  });
+  // Firestore persistence is configured via initializeFirestore with
+  // persistentLocalCache + persistentSingleTabManager above. Avoid calling
+  // `enableIndexedDbPersistence` here because it will throw if the SDK cache
+  // is already specified (e.g. when using persistentLocalCache).
   
   // Initialize Realtime Database
   rtdb = getDatabase(app);

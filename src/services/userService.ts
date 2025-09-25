@@ -2,14 +2,13 @@ import { db, rtdb } from '../firebase';
 import { 
   doc, 
   setDoc, 
-  getDoc, 
   collection, 
   query, 
   where, 
   getDocs,
   GeoPoint 
 } from 'firebase/firestore';
-import { ref, set, onValue } from 'firebase/database';
+import { ref, set } from 'firebase/database';
 
 interface Location {
   latitude: number;
