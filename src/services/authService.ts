@@ -2,8 +2,10 @@ import { auth, db, rtdb } from '../firebase';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
-  FacebookAuthProvider,
-  User 
+  User, 
+  RecaptchaVerifier, 
+  signInWithPhoneNumber, 
+  ConfirmationResult
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, set, onValue, onDisconnect } from 'firebase/database';
@@ -31,25 +33,29 @@ export const handleGoogleSignIn = async (userType: 'rider' | 'driver' = 'rider')
   }
 };
 
-export const handleFacebookSignIn = async (userType: 'rider' | 'driver' = 'rider') => {
+export const setupRecaptcha = (containerId: string) => {
+  return new RecaptchaVerifier(containerId, {
+    'size': 'invisible',
+  }, auth);
+};
+
+export const handlePhoneSignIn = async (phoneNumber: string, appVerifier: RecaptchaVerifier) => {
   try {
-    const provider = new FacebookAuthProvider();
-    provider.setCustomParameters({
-      'display': 'popup'
-    });
-    const result = await signInWithPopup(auth, provider);
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+    return confirmationResult;
+  } catch (error: any) {
+    console.error('Phone sign-in error:', error);
+    throw error;
+  }
+};
+
+export const verifyOtp = async (confirmationResult: ConfirmationResult, otp: string, userType: 'rider' | 'driver') => {
+  try {
+    const result = await confirmationResult.confirm(otp);
     await createOrUpdateUserProfile(result.user, userType);
     return result.user;
   } catch (error: any) {
-    console.error('Facebook sign-in error:', {
-      code: error.code,
-      message: error.message,
-      email: error.email,
-      credential: error.credential
-    });
-    if (error.code === 'auth/unauthorized-domain') {
-      console.error('Please ensure this domain is added to OAuth redirect domains in Facebook Developer Console');
-    }
+    console.error('OTP verification error:', error);
     throw error;
   }
 };
@@ -63,7 +69,7 @@ const createOrUpdateUserProfile = async (user: User, userType: 'rider' | 'driver
 
     const userData = {
       uid: user.uid,
-      displayName: user.displayName,
+      displayName: user.displayName || user.phoneNumber,
       email: user.email,
       phoneNumber: user.phoneNumber,
       photoURL: user.photoURL,
