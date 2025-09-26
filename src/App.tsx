@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './Component/ErrorFallBack';
 import Home from './Pages/home';
@@ -37,20 +37,18 @@ const App: React.FC = () => {
             FallbackComponent={ErrorFallback}
             onReset={() => window.location.reload()}
         >
-            <Router>
-                <Switch>
-                    <Route exact path="/" component={Home} />
-                    <Route exact path="/pick/:origin" component={Pick} />
-                    <Route exact path="/drop/:origin/:end" component={Drop} />
-                    {userType === 'driver' ? (
-                        <>
-                            <Route exact path="/driver/register" component={DriverRegistration} />
-                            <Route exact path="/driver/dashboard" component={DriverDashboard} />
-                        </>
-                    ) : null}
-                    <Route component={NoPage} />
-                </Switch>
-            </Router>
+            <Switch>
+                <Route exact path="/" component={Home} />
+                <Route exact path="/pick/:origin" component={Pick} />
+                <Route exact path="/drop/:origin/:end" component={Drop} />
+                {userType === 'driver' ? (
+                    <>
+                        <Route exact path="/driver/register" component={DriverRegistration} />
+                        <Route exact path="/driver/dashboard" component={DriverDashboard} />
+                    </>
+                ) : null}
+                <Route component={NoPage} />
+            </Switch>
         </ErrorBoundary>
     );
 };

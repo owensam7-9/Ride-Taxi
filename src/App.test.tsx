@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
+import { MemoryRouter } from 'react-router-dom';
 import { store } from './Store';
 import App from './App';
 
@@ -44,7 +45,9 @@ describe('App Component', () => {
   const renderApp = () => {
     return render(
       <Provider store={store}>
-        <App />
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
       </Provider>
     );
   };

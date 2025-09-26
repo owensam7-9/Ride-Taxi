@@ -1,10 +1,8 @@
 import React from 'react';
 import GreetUser from '../../Component/account';
 import { 
-  handleGoogleSignIn, 
-  handlePhoneSignIn,
+  handleGoogleSignIn,
 } from '../../services/authService';
-import { RecaptchaVerifier } from 'firebase/auth';
 
 const Auth: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'rider' | 'driver'>('rider');

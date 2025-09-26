@@ -5,7 +5,7 @@ import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-go
 import { updateErrorMessage } from '../../Store/slice';
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import { GOOGLE_API_KEY } from '../const/api';
-import { driversLocations } from './driversLocation';
+import { getDriverLocations } from './driversLocation';
 import { mapStyle } from './mapStyle';
 import InfoComponent from './infoComponent';
 import Loading from '../Loading';
@@ -19,6 +19,7 @@ const Map: React.FC = (): JSX.Element => {
   const [isLoadingDirections, setIsLoadingDirections] = useState(false);
   const isPickupDisable = useAppSelector(state => state.root.pickup.disabled);
   const isDestinationDisable = useAppSelector(state => state.root.destination.disabled);
+  const [drivers, setDrivers] = useState<any[]>([]);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_API_KEY || '',
@@ -28,11 +29,23 @@ const Map: React.FC = (): JSX.Element => {
   const biggerScreen = useMediaPredicate('(min-width: 640px)');
 
 
- // eslint-disable-next-line 
+ // eslint-disable-next-line
   const getCurrentSeconds = () => {
     const date = new Date();
     return date.getMilliseconds();
   };
+
+  useEffect(() => {
+    let mounted = true;
+    if (mounted) {
+      getDriverLocations().then((locations) => {
+        setDrivers(locations);
+      });
+    }
+    return () => {
+      mounted = false;
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -43,7 +56,7 @@ const Map: React.FC = (): JSX.Element => {
       }
 
       setIsLoadingDirections(true);
-      
+
       try {
         const directionsService = new google.maps.DirectionsService();
         const response = await directionsService.route({
@@ -83,10 +96,10 @@ const Map: React.FC = (): JSX.Element => {
       mounted = false;
     };
   }, [dispatch, isPickupDisable, isDestinationDisable, origin, end]);
- 
 
 
-  
+
+
 
   if(!isLoaded) {
     // if(document.readyState !== 'complete') {
@@ -97,9 +110,9 @@ const Map: React.FC = (): JSX.Element => {
       )
     // }  
   }
-  
 
-  
+
+
   if (loadError) {
     dispatch(updateErrorMessage('Failed to load Google Maps. Please check your internet connection.'));
     return <div className="bg-white fixed w-full h-full top-0 z-50">Error loading maps</div>;
@@ -144,7 +157,7 @@ const Map: React.FC = (): JSX.Element => {
         },  
       }}
       />
-        {driversLocations?.map((location, i) => (
+        {drivers?.map((location, i) => (
           <Marker key={i}  position={location}
            clickable={false}
             zIndex={1}
@@ -174,7 +187,7 @@ const Map: React.FC = (): JSX.Element => {
       center = {directionsResponse.routes[0].legs[0].start_location}
       place  = {`From ${origin.split(",")[0]}`}
     />
-     
+
      <InfoComponent
       center = {directionsResponse.routes[0].legs[0].end_location}
       place  = {`To ${end.split(",")[0]}`}
