@@ -117,7 +117,6 @@ const [browserSupported, setBrowserSupported] = useState(false);
     const currentLocation = data.results[0]?.formatted_address;
     dispatch(updatePickup(currentLocation));
     dispatch(updatePickupDisable(true));
-    //console.log(data);
     history.push(`/pick/${currentLocation}`);
   }
   
@@ -169,6 +168,7 @@ const [browserSupported, setBrowserSupported] = useState(false);
             {destination !== '' && !isDestinationDisable  &&  <div 
             onClick={()=>{
               dispatch(updateDestination(''));
+              setSuggestions([]);
             }}
             className="absolute top-6 right-5 ">
             <CancelSVG/>
@@ -176,17 +176,19 @@ const [browserSupported, setBrowserSupported] = useState(false);
           </div>
         </div>
       </div>
-      <div className="flex items-center bg-light-gray w-fit py-1.5 px-5 rounded-3xl my-2">
-        <div className="leave-time">
-          <ClockSVG/>
+      {destination && (
+        <div className="flex items-center bg-light-gray w-fit py-1.5 px-5 rounded-3xl my-2">
+          <div className="leave-time">
+            <ClockSVG/>
+          </div>
+          <div className="ml-2 font-medium text-[16px] sm:text-md">
+            Leave Now
+          </div>
         </div>
-        <div className="ml-2 font-medium text-[16px] sm:text-md">
-          Leave Now
-        </div>
-      </div>
+      )}
 
       <div className="text-[16px] sm:text-md">
-        {!isLoading && suggestions.length <= 0 && currentRoute.pathname === "/"?
+        {!isLoading && suggestions.length <= 0 && currentRoute.pathname === "/" && pickup === '' ?
             <div className="my-5 ">
               {browserSupported && data?.status === 'OK' &&
               <div onClick={handleClick}  className="each_suggestion flex items-center my-3 cursor-pointer">
@@ -209,6 +211,7 @@ const [browserSupported, setBrowserSupported] = useState(false);
             destinationRef={destinationRef}
             key={i} 
             suggestions={data}
+            setSuggestions={setSuggestions}
           />))}
       </div>  
     </div>

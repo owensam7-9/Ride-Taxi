@@ -109,6 +109,11 @@ const createOrUpdateUserProfile = async (user: User, userType: 'rider' | 'driver
       lastUpdated: new Date().toISOString()
     }));
 
+    // Set user info for app logic
+    localStorage.setItem('userName', user.displayName || user.phoneNumber || '');
+    localStorage.setItem('userType', userType);
+    localStorage.setItem('userStatus', userData.status);
+
   } catch (error) {
     console.error('Error updating user profile:', error);
     // Try to use cached data if available

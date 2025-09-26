@@ -1,7 +1,7 @@
 import React from "react";
 import { useHistory, useParams} from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../Store/hooks";
-import {updatePickupDisable, updateDestinationDisable} from "../../Store/slice";
+import {updatePickupDisable, updateDestinationDisable, updateDestination} from "../../Store/slice";
 import { LocationSVG } from "../const/svg";
 
 
@@ -9,9 +9,12 @@ interface  Props{
   suggestions : any;
   pickupRef: any;
   destinationRef: any;
+  setSuggestions: (suggestions: never[]) => void;
 }
 
-const Suggestions:React.FC<Props> =  ({suggestions
+const Suggestions:React.FC<Props> =  ({
+  suggestions,
+  setSuggestions
 }) => {
   const dispatch = useAppDispatch();
   const history = useHistory();
@@ -29,8 +32,10 @@ const Suggestions:React.FC<Props> =  ({suggestions
       history.push(`/pick/${description}`);
     }else{ 
       dispatch(updateDestinationDisable(true));
+      dispatch(updateDestination(description));
       history.push(`/drop/${origin}/${description}`);
     }
+    setSuggestions([]);
   }
   
    return (

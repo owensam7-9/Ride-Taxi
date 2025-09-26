@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from './Component/ErrorFallBack';
 import Home from './Pages/home';
@@ -31,6 +31,11 @@ const App: React.FC = () => {
     }
 
     const userType = localStorage.getItem('userType');
+    const userStatus = localStorage.getItem('userStatus');
+
+    if (userType === 'driver' && userStatus === 'inactive') {
+        return <Redirect to="/driver/register" />;
+    }
 
     return (
         <ErrorBoundary
@@ -41,12 +46,8 @@ const App: React.FC = () => {
                 <Route exact path="/" component={Home} />
                 <Route exact path="/pick/:origin" component={Pick} />
                 <Route exact path="/drop/:origin/:end" component={Drop} />
-                {userType === 'driver' ? (
-                    <>
-                        <Route exact path="/driver/register" component={DriverRegistration} />
-                        <Route exact path="/driver/dashboard" component={DriverDashboard} />
-                    </>
-                ) : null}
+                <Route exact path="/driver/register" component={DriverRegistration} />
+                <Route exact path="/driver/dashboard" component={DriverDashboard} />
                 <Route component={NoPage} />
             </Switch>
         </ErrorBoundary>
