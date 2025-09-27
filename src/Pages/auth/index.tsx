@@ -12,6 +12,7 @@ const Auth: React.FC = () => {
     try {
       await handleGoogleSignIn(activeTab);
       // Handle successful sign-in
+      window.location.reload();
     } catch (error) {
       console.error('Google sign-in failed', error);
     }

@@ -70,6 +70,7 @@ describe('App Component', () => {
 
   test('renders Home page when user is logged in', async () => {
     window.localStorage.setItem('userName', 'Test User');
+    window.localStorage.setItem('userType', 'rider');
     renderApp();
     act(() => {
         jest.advanceTimersByTime(1000);

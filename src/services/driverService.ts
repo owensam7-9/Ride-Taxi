@@ -114,3 +114,16 @@ export const getDriverProfile = async (driverId: string) => {
     throw new Error(error.message || 'Failed to fetch driver profile');
   }
 };
+
+export const acceptRideRequest = async (rideId: string, driverId: string) => {
+    try {
+      const rideRef = doc(db, 'ride-requests', rideId);
+      await updateDoc(rideRef, {
+        status: 'accepted',
+        driverId: driverId,
+      });
+      return { success: true };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to accept ride request');
+    }
+  };

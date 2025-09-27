@@ -6,6 +6,23 @@ import App from "./App";
 import { User, onAuthStateChanged } from "firebase/auth";
 import * as driverService from "./services/driverService";
 
+// Mock firestore
+jest.mock('firebase/firestore', () => {
+    const originalModule = jest.requireActual('firebase/firestore');
+    return {
+        ...originalModule,
+        collection: jest.fn(),
+        query: jest.fn(),
+        where: jest.fn(),
+        onSnapshot: jest.fn((query, callback) => {
+            // Immediately invoke callback with an empty snapshot
+            callback({ docs: [] });
+            // Return a mock unsubscribe function
+            return jest.fn();
+        }),
+    };
+});
+
 jest.mock("firebase/auth");
 
 // Mock Map component
