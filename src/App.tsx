@@ -33,25 +33,41 @@ const App: React.FC = () => {
     const userType = localStorage.getItem('userType');
     const userStatus = localStorage.getItem('userStatus');
 
-    if (userType === 'driver' && userStatus === 'inactive') {
-        return <Redirect to="/driver/register" />;
+    if (userType === 'driver') {
+        if (userStatus === 'inactive') {
+            return (
+                <Switch>
+                    <Route exact path="/driver/register" component={DriverRegistration} />
+                    <Redirect to="/driver/register" />
+                </Switch>
+            );
+        }
+        return (
+            <Switch>
+                <Route exact path="/driver/dashboard" component={DriverDashboard} />
+                <Redirect to="/driver/dashboard" />
+            </Switch>
+        );
     }
 
-    return (
-        <ErrorBoundary
-            FallbackComponent={ErrorFallback}
-            onReset={() => window.location.reload()}
-        >
-            <Switch>
-                <Route exact path="/" component={Home} />
-                <Route exact path="/pick/:origin" component={Pick} />
-                <Route exact path="/drop/:origin/:end" component={Drop} />
-                <Route exact path="/driver/register" component={DriverRegistration} />
-                <Route exact path="/driver/dashboard" component={DriverDashboard} />
-                <Route component={NoPage} />
-            </Switch>
-        </ErrorBoundary>
-    );
+    if (userType === 'rider') {
+        return (
+            <ErrorBoundary
+                FallbackComponent={ErrorFallback}
+                onReset={() => window.location.reload()}
+            >
+                <Switch>
+                    <Route exact path="/" component={Home} />
+                    <Route exact path="/pick/:origin" component={Pick} />
+                    <Route exact path="/drop/:origin/:end" component={Drop} />
+                    <Route component={NoPage} />
+                </Switch>
+            </ErrorBoundary>
+        );
+    }
+
+    // Fallback for any other userType or if userType is not set
+    return <Auth />;
 };
 
 export default App;
