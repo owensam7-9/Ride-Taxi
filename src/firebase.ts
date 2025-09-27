@@ -63,7 +63,7 @@ try {
       cacheSizeBytes: CACHE_SIZE_UNLIMITED,
       tabManager: persistentSingleTabManager({ forceOwnership: true })
     })
-  });
+  }, 'ridecosy');
 
   // Firestore persistence is configured via initializeFirestore with
   // persistentLocalCache + persistentSingleTabManager above. Avoid calling
@@ -71,7 +71,7 @@ try {
   // is already specified (e.g. when using persistentLocalCache).
   
   // Initialize Realtime Database
-  rtdb = getDatabase(app);
+  rtdb = getDatabase(app, firebaseConfig.databaseURL);
   
   // Initialize Storage
   storage = getStorage(app);

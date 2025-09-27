@@ -2,22 +2,59 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper functions
+    // ############
+    // ## Helper Functions
+    // ############
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isUserDoc(userId) {
+    // Checks if the UID in the path matches the authenticated user's UID
+    function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Driver documents
-    match /drivers/{userId}/{document=**} {
-      allow read: if isAuthenticated() && (
-        isUserDoc(userId) || 
-        request.auth.token.admin == true
-      );
-      allow write: if isAuthenticated() && isUserDoc(userId);
+    // Validates that the uploaded file is an image and is under 5MB.
+    function isValidImage(maxSizeMB) {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+    
+    // Validates document types and size.
+    function isValidDocument(maxSizeMB) {
+        return (request.resource.contentType.matches('application/pdf') || request.resource.contentType.matches('image/.*'))
+        && request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+
+    // ############
+    // ## User Profile Pictures
+    // ############
+    // Path: /users/{userId}/profile_picture.jpg
+    match /users/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      // Allow the user to write to their own folder, and validate the image.
+      allow write: if isOwner(userId) && isValidImage(5);
+    }
+
+    // ############
+    // ## Driver Related Files
+    // ############
+    match /drivers/{driverId} {
+        // --- Driver Documents ---
+        // Path: /drivers/{driverId}/documents/drivers_license.pdf
+        match /documents/{documentName} {
+            allow read: if isOwner(driverId) || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+            // Allow owner to write, and validate the document.
+            allow write: if isOwner(driverId) && isValidDocument(10);
+        }
+
+        // --- Vehicle Images ---
+        // Path: /drivers/{driverId}/vehicles/vehicle_front.png
+        match /vehicles/{imageName} {
+            allow read: if isAuthenticated();
+            // Allow owner to write, and validate the image.
+            allow write: if isOwner(driverId) && isValidImage(5);
+        }
     }
 
     // Prevent access to all other paths

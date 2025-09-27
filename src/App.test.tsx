@@ -60,7 +60,7 @@ describe('App Component', () => {
   test('renders Auth page when user is not logged in', async () => {
     renderApp();
     act(() => {
-      jest.runOnlyPendingTimers();
+      jest.advanceTimersByTime(1000);
     });
     await waitFor(() => {
         expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('App Component', () => {
     window.localStorage.setItem('userName', 'Test User');
     renderApp();
     act(() => {
-        jest.runOnlyPendingTimers();
+        jest.advanceTimersByTime(1000);
     });
     await waitFor(() => {
         expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
@@ -81,4 +81,17 @@ describe('App Component', () => {
     expect(screen.getByTestId('map-mock')).toBeInTheDocument();
   });
 
+  test('renders driver registration page when driver is inactive', async () => {
+    window.localStorage.setItem('userName', 'Test Driver');
+    window.localStorage.setItem('userType', 'driver');
+    window.localStorage.setItem('userStatus', 'inactive');
+    renderApp();
+    act(() => {
+        jest.advanceTimersByTime(1000);
+    });
+    await waitFor(() => {
+        expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(/Driver Registration/i)).toBeInTheDocument();
+  });
 });

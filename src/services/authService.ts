@@ -34,9 +34,9 @@ export const handleGoogleSignIn = async (userType: 'rider' | 'driver' = 'rider')
 };
 
 export const setupRecaptcha = (containerId: string) => {
-  return new RecaptchaVerifier(containerId, {
+  return new RecaptchaVerifier(auth, containerId, {
     'size': 'invisible',
-  }, auth);
+  });
 };
 
 export const handlePhoneSignIn = async (phoneNumber: string, appVerifier: RecaptchaVerifier) => {
